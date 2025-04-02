@@ -10,7 +10,12 @@ First project that's a Linux Shell implemented in C.
 
 ## Instructions
 Compile the code
-``` gcc CSCI340Shell.c -o shell```
+```bash 
+gcc CSCI340Shell.c -o shell
+```
 Run 
-```./shell```
+
+```bash
+./shell
+```
 Enter any commands, few examples are from test.txt
