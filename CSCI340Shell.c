@@ -48,60 +48,74 @@ int main() {
         if (strchr(input, '|') != NULL) {
             char *commands[10];
             int num_cmds = 0;
-        
+            char *output_file = NULL;
+
+            // Check for output redirection (any spacing)
+            char *redir_pos = strchr(input, '>');
+            if (redir_pos != NULL) {
+                *redir_pos = '\0';
+                redir_pos++;
+                while (*redir_pos == ' ') redir_pos++;
+                output_file = strtok(redir_pos, " \t\n");
+            }
+
             commands[num_cmds] = strtok(input, "|");
             while (commands[num_cmds] != NULL && num_cmds < 9) {
                 num_cmds++;
                 commands[num_cmds] = strtok(NULL, "|");
             }
-        
+
             int pipe_fd[2], prev_fd = -1;
             pid_t pids[10];
-        
+
             for (int i = 0; i < num_cmds; i++) {
                 char *cmd = commands[i];
-                while (*cmd == ' ') cmd++; // trim leading spaces
-        
+                while (*cmd == ' ') cmd++;
+
                 char *cmd_args[MAX_ARGS];
                 parse_input(cmd, cmd_args);
-        
+
                 if (cmd_args[0] == NULL) {
                     fprintf(stderr, "Empty command in pipe segment %d\n", i + 1);
                     continue;
                 }
-        
+
                 if (i < num_cmds - 1 && pipe(pipe_fd) < 0) {
                     perror("pipe failed");
                     exit(EXIT_FAILURE);
                 }
-        
+
                 pid_t pid = fork();
                 if (pid < 0) {
                     perror("fork failed");
                     exit(EXIT_FAILURE);
                 }
-        
+
                 if (pid == 0) {
-                    // === CHILD ===
-        
                     if (prev_fd != -1) {
                         dup2(prev_fd, STDIN_FILENO);
                         close(prev_fd);
                     }
-        
+
                     if (i < num_cmds - 1) {
                         close(pipe_fd[0]);
                         dup2(pipe_fd[1], STDOUT_FILENO);
                         close(pipe_fd[1]);
+                    } else if (output_file != NULL) {
+                        int fd_out = open(output_file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+                        if (fd_out < 0) {
+                            perror("open output file failed");
+                            exit(EXIT_FAILURE);
+                        }
+                        dup2(fd_out, STDOUT_FILENO);
+                        close(fd_out);
                     }
-        
+
                     execv(cmd_args[0], cmd_args);
                     perror("execv failed");
                     exit(EXIT_FAILURE);
                 } else {
-                    // === PARENT ===
                     pids[i] = pid;
-        
                     if (prev_fd != -1) close(prev_fd);
                     if (i < num_cmds - 1) {
                         close(pipe_fd[1]);
@@ -109,14 +123,14 @@ int main() {
                     }
                 }
             }
-        
-            // Wait for all child processes
+
             for (int i = 0; i < num_cmds; i++) {
                 waitpid(pids[i], NULL, 0);
             }
-        
+
             continue;
         }
+
         
         
 

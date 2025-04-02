@@ -1,6 +1,0 @@
-CSCI340Shell.c
-Project1.pdf
-a.out
-out.txt
-shell
-test.txt
