@@ -9,10 +9,15 @@ First project that's a Linux Shell implemented in C.
 - Unidirectional Piping
 
 ## Instructions
+If you haven't installed gcc, here's the command
+```bash
+sudo apt install gcc
+```
 Compile the code
 ```bash 
 gcc CSCI340Shell.c -o shell
 ```
+
 Run 
 
 ```bash
