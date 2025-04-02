@@ -18,4 +18,6 @@ Run
 ```bash
 ./shell
 ```
-Enter any commands, few examples are from test.txt
+Enter any commands, few examples are from test.txt.
+
+NOTE: This is a barebones implementation of shell, advanced features aren't included.
